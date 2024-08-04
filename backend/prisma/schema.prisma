@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  email           String   @unique
+  password        String
+  countPosts      Int?     @map("count_posts")
+  countCategories Int?     @map("count_categories")
+
+  @@map("admin")
+}
+
+model Category {
+  id      String         @id @default(cuid())
+  name    String
+  image   CategoryImage?
+  product Product[]
+
+  @@map("category")
+}
+
+model CategoryImage {
+  id Int @id @default(autoincrement())
+
+  publicId String? @map("public_id")
+  format   String?
+  version  String?
+
+  categoryId String   @unique @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("category_image")
+}
+
+model Country {
+  id      String   @id @default(cuid())
+  name    String
+  product Product?
+
+  @@map("country")
+}
+
+model Manufacturer {
+  id      String   @id @default(cuid())
+  name    String
+  product Product?
+
+  @@map("manufacturer")
+}
+
+model Product {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  description String
+
+  baseImage        String?  @map("base_image")
+  additionalImages String[] @map("additional_image")
+
+  categoryId     String @map("category_id")
+  countryId      String @unique @map("country_id")
+  manufacturerId String @unique @map("manufacturer_id")
+
+  article      Int
+  count        Int          @default(0)
+  isPublished  Boolean
+  name         String
+  price        Float
+  category     Category     @relation(fields: [categoryId], references: [id])
+  country      Country      @relation(fields: [countryId], references: [id])
+  manufacturer Manufacturer @relation(fields: [manufacturerId], references: [id])
+
+  @@map("product")
+}
+
+enum Roles {
+  ADMIN
+  USER
+}
