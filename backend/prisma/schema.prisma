@@ -19,31 +19,9 @@ model Admin {
   @@map("admin")
 }
 
-model Category {
-  id      String         @id @default(cuid())
-  name    String
-  image   CategoryImage?
-  product Product[]
-
-  @@map("category")
-}
-
-model CategoryImage {
-  id Int @id @default(autoincrement())
-
-  publicId String? @map("public_id")
-  format   String?
-  version  String?
-
-  categoryId String   @unique @map("category_id")
-  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@map("category_image")
-}
-
 model Country {
   id      String   @id @default(cuid())
-  name    String
+  name    String   @unique
   product Product?
 
   @@map("country")
@@ -51,35 +29,38 @@ model Country {
 
 model Manufacturer {
   id      String   @id @default(cuid())
-  name    String
+  name    String   @unique
   product Product?
 
   @@map("manufacturer")
 }
 
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  image    String
+  products Product[] @relation("CategoryToProduct")
+
+  @@map("category")
+}
+
 model Product {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  description String
-
-  baseImage        String?  @map("base_image")
-  additionalImages String[] @map("additional_image")
-
-  categoryId     String @map("category_id")
-  countryId      String @unique @map("country_id")
-  manufacturerId String @unique @map("manufacturer_id")
-
-  article      Int
-  count        Int          @default(0)
-  isPublished  Boolean
-  name         String
-  price        Float
-  category     Category     @relation(fields: [categoryId], references: [id])
-  country      Country      @relation(fields: [countryId], references: [id])
-  manufacturer Manufacturer @relation(fields: [manufacturerId], references: [id])
+  id               String       @id @default(cuid())
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+  description      String
+  baseImage        String?      @map("base_image")
+  additionalImages String[]     @map("additional_image")
+  countryId        String       @unique @map("country_id")
+  manufacturerId   String       @unique @map("manufacturer_id")
+  article          Int
+  count            Int?         @default(0)
+  isPublished      Boolean
+  name             String
+  price            Float
+  country          Country      @relation(fields: [countryId], references: [id])
+  manufacturer     Manufacturer @relation(fields: [manufacturerId], references: [id])
+  categories       Category[]   @relation("CategoryToProduct")
 
   @@map("product")
 }

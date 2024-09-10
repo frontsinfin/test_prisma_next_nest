@@ -14,6 +14,10 @@ import { ManufacturerService } from './manufacturer.service';
 @Controller('manufacturer')
 export class ManufacturerController {
   constructor(private readonly manufacturerService: ManufacturerService) {}
+  @Get()
+  async getAll() {
+    return this.manufacturerService.getAll();
+  }
 
   @Post()
   @Auth()
@@ -31,11 +35,5 @@ export class ManufacturerController {
   @Auth()
   async delete(@Param('id') id: string) {
     return this.manufacturerService.delete(id);
-  }
-
-  @Get()
-  @Auth()
-  async getAll() {
-    return this.manufacturerService.getAll();
   }
 }

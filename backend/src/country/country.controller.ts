@@ -14,6 +14,10 @@ import { CreateCountryDto } from 'src/country/dto/country.dto';
 @Controller('country')
 export class CountryController {
   constructor(private readonly countryService: CountryService) {}
+  @Get()
+  async getAll() {
+    return this.countryService.getAll();
+  }
 
   @Post()
   @Auth()
@@ -31,11 +35,5 @@ export class CountryController {
   @Auth()
   async delete(@Param('id') id: string) {
     return this.countryService.delete(id);
-  }
-
-  @Get()
-  @Auth()
-  async getAll() {
-    return this.countryService.getAll();
   }
 }

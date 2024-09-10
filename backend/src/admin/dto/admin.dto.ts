@@ -7,5 +7,5 @@ export class AdminDto {
 
   @IsString()
   @MinLength(8, { message: 'Не менее 8 символов' })
-  password: string;
+  password: string; 
 }

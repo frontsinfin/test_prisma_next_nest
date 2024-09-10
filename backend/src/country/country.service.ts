@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { CreateCountryDto } from './dto/country.dto';
 
@@ -6,8 +6,24 @@ import { CreateCountryDto } from './dto/country.dto';
 export class CountryService {
   constructor(private prismaService: PrismaService) {}
 
+  async getAll() {
+    return this.prismaService.country.findMany();
+  }
+
+  async getOne(dto: CreateCountryDto) {
+    const name = dto.name.toLowerCase();
+    return this.prismaService.country.findUnique({
+      where: { name: name },
+    });
+  }
+
   async create(dto: CreateCountryDto) {
-    return this.prismaService.country.create({ data: dto });
+    const category = await this.getOne(dto);
+    if (category) throw new NotFoundException('Такая страна уже существует');
+    const data = { ...dto, name: dto.name.toLowerCase() };
+    return this.prismaService.country.create({
+      data: data,
+    });
   }
 
   async update(id: string, dto: CreateCountryDto) {
@@ -17,9 +33,5 @@ export class CountryService {
 
   async delete(id: string) {
     return this.prismaService.country.delete({ where: { id } });
-  }
-
-  async getAll() {
-    return this.prismaService.country.findMany();
   }
 }

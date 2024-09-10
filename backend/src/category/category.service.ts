@@ -1,32 +1,38 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCategoryDto } from './dto/category.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 
 @Injectable()
 export class CategoryService {
-  constructor(
-    private prismaService: PrismaService,
-    private cloudinaryService: CloudinaryService,
-  ) {}
+  constructor(private prismaService: PrismaService) {}
 
-  async create(dto: CreateCategoryDto) {
-    const category = { name: dto.name };
-    return this.prismaService.category.create({ data: category });
+  async getAll() {
+    return this.prismaService.category.findMany();
   }
-  async getCategory() {
-    return this.prismaService.category.findMany({ include: { image: true } });
+  async getOne(dto: CreateCategoryDto) {
+    const name = dto.name.toLowerCase();
+    return this.prismaService.category.findUnique({
+      where: { name: name },
+    });
   }
-  async deleteCategory(id: string) {
+  async delete(id: string) {
     return this.prismaService.category.delete({
       where: { id },
     });
   }
 
-  async getCategoryImage(id: string) {
-    return this.prismaService.category.findUnique({
+  async create(dto: CreateCategoryDto) {
+    const category = await this.getOne(dto);
+    if (category) throw new NotFoundException('Такая категория уже существует');
+    const data = { ...dto, name: dto.name.toLowerCase() };
+    return this.prismaService.category.create({
+      data: data,
+    });
+  }
+  async update(id: string, dto: UpdateCategoryDto) {
+    return this.prismaService.category.update({
       where: { id },
-      include: { image: true },
+      data: { ...dto },
     });
   }
 }

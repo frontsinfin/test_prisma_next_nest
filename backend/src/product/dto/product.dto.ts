@@ -8,28 +8,31 @@ import {
 } from 'class-validator';
 
 export class CreateProductDto {
+  @IsOptional()
   @IsString()
-  name: string;
+  description: string;
+
+  @IsOptional()
+  @IsString()
+  baseImage: string;
+
+  @IsOptional()
+  @IsArray()
+  additionalImages: string[];
 
   @IsString()
   article: number;
 
   @IsNumber()
-  price: number;
-
-  @IsNumber()
   count: number;
-
-  @IsString()
-  description: string;
-
-  @IsString()
-  baseImage: string;
-
-  @IsArray()
-  additionalImages: string[];
 
   @IsBoolean()
   isPublished: boolean;
+
+  @IsString()
+  name: string;
+
+  @IsNumber()
+  price: number;
 }
 export class UpdateProductDto extends PartialType(CreateProductDto) {}

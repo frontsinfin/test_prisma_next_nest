@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { CreateManufacturerDto } from './dto/manufacturer.dto';
 
@@ -6,8 +6,20 @@ import { CreateManufacturerDto } from './dto/manufacturer.dto';
 export class ManufacturerService {
   constructor(private prismaService: PrismaService) {}
 
+  async getOne(dto: CreateManufacturerDto) {
+    const name = dto.name.toLowerCase();
+    return this.prismaService.manufacturer.findUnique({
+      where: { name: name },
+    });
+  }
+
   async create(dto: CreateManufacturerDto) {
-    return this.prismaService.manufacturer.create({ data: dto });
+    const category = await this.getOne(dto);
+    if (category) throw new NotFoundException('Такая страна уже существует');
+    const data = { ...dto, name: dto.name.toLowerCase() };
+    return this.prismaService.manufacturer.create({
+      data: data,
+    });
   }
 
   async update(id: string, dto: CreateManufacturerDto) {

@@ -7,6 +7,8 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UploadedFile,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -15,6 +17,7 @@ import { AdminDto } from './dto/admin.dto';
 import { PrismaService } from 'src/prisma.service';
 import { Auth } from './decorators/auth.decorator';
 import { Request, Response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('admin')
 export class AdminController {
@@ -36,6 +39,7 @@ export class AdminController {
   }
 
   @HttpCode(200)
+  @Auth()
   @Post('register')
   async register(
     @Body() dto: AdminDto,
@@ -71,13 +75,14 @@ export class AdminController {
   }
 
   @HttpCode(200)
+  @Auth()
   @Post('logout')
   async logout(@Res({ passthrough: true }) res: Response) {
     this.adminService.removeRefreshTokenFromResponse(res);
     return true;
   }
 
-  @Get('all')
+  @Get('')
   @Auth()
   async findAll() {
     return this.adminService.findAll();

@@ -5,47 +5,52 @@ import {
   Get,
   Param,
   Post,
+  Put,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { Auth } from 'src/admin/decorators/auth.decorator';
-import { CreateCategoryDto } from './dto/category.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { objectStorage } from 'src/utils/yandexS3';
 
 @Controller('category')
 export class CategoryController {
-  constructor(
-    private readonly categoryService: CategoryService,
-    private cloudinaryService: CloudinaryService,
-  ) {}
+  constructor(private readonly categoryService: CategoryService) {}
+
+  @Get()
+  async getAll() {
+    return this.categoryService.getAll();
+  }
 
   @Post()
   @Auth()
-  async create(@Body() dto: CreateCategoryDto) {
+  @UseInterceptors(FileInterceptor('file'))
+  async create(
+    @UploadedFile() image: Express.Multer.File,
+    @Body() name: { name: string },
+  ) {
+    const link = await objectStorage(image, 'category');
+    const dto = { name: name.name, image: link };
     return this.categoryService.create(dto);
   }
-  @Get()
+
+  @Put(':id')
   @Auth()
-  async getCategory() {
-    return this.categoryService.getCategory();
+  @UseInterceptors(FileInterceptor('file'))
+  async update(
+    @UploadedFile() image: Express.Multer.File,
+    @Body() name: { name: string },
+    @Param('id') id: string,
+  ) {
+    const link = await objectStorage(image, 'category');
+    const dto = { name: name.name, image: link };
+    return this.categoryService.update(id, dto);
   }
+
   @Delete(':id')
   @Auth()
   async deleteCategory(@Param('id') categoryId: string) {
-    return this.categoryService.deleteCategory(categoryId);
-  }
-
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
-  uploadImage(@UploadedFile() file: Express.Multer.File) {
-    return this.cloudinaryService.uploadFile(file);
-  }
-
-  @Get('/upload/:id')
-  @Auth()
-  async getCategoryImage(@Param('id') categoryId: string) {
-    return this.categoryService.getCategoryImage(categoryId);
+    return this.categoryService.delete(categoryId);
   }
 }
